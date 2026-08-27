@@ -1,0 +1,11 @@
+apiVersion: v2
+name: accessai
+description: Helm chart for AccessAI Real-Time Audio Description & Accessibility Multi-Agent Framework
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - accessibility
+  - audio-description
+  - wcag-aaa
+  - real-time-assistive-ai

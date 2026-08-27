@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  accessai-gateway:
+    build: .
+    container_name: accessai-gateway
+    ports:
+      - "8015:8015"
+    environment:
+      - ENVIRONMENT=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8015/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: always

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "accessai"
+version = "1.0.0"
+description = "AccessAI: Real-Time Audio Description & Accessibility Multi-Agent Framework"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "AccessAI Assistive Labs", email = "accessibility@accessai.dev" }]
+keywords = ["accessibility", "audio-description", "wcag-aaa", "real-time-assistive-ai", "screen-reader", "multimodal-ai"]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "pydantic>=2.7.0",
+    "httpx>=0.27.0",
+    "pyyaml>=6.0.1"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

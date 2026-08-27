@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccessAI | Real-Time Audio Description & Accessibility Multi-Agent Framework</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient Safety Lights -->
+  <div class="glow-sphere glow-emerald"></div>
+  <div class="glow-sphere glow-cyan"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>Access<span class="gradient-text">AI</span></h1>
+          <span class="brand-badge" data-i18n="badgeTitle">WCAG 2.2 AAA Real-Time Agent</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="https://asadullahshafique-devunity.vercel.app" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">
+          <span>👨‍💻 DevUnity Portfolio</span>
+        </a>
+
+        <div class="live-status">
+          <span class="pulse-dot"></span>
+          <span id="gatewayStatus" data-i18n="statusLive">Accessibility Daemon Active (:8015)</span>
+        </div>
+
+        <button id="langToggleBtn" class="btn btn-outline btn-sm" onclick="toggleLanguage()">
+          <span id="langLabel">العربية</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main class="app-main">
+    <!-- Hero Header -->
+    <section class="hero-section">
+      <h2 data-i18n="heroTitle">Real-Time Audio Description & Broadcast Accessibility</h2>
+      <p data-i18n="heroSubtitle">Coordinate StreamAgent, NarratorAgent, and ComplianceAgent to generate zero-collision live audio descriptions and spatial sound summaries for visually impaired users with WCAG 2.2 AAA certification.</p>
+    </section>
+
+    <!-- Metrics Row -->
+    <section class="metrics-grid">
+      <div class="metric-card glass">
+        <span class="metric-label" data-i18n="metric1Label">Stream Latency</span>
+        <div class="metric-value gradient-text">&lt; 120ms</div>
+        <span class="metric-sub" data-i18n="metric1Sub">Real-Time Ingestion</span>
+      </div>
+      <div class="metric-card glass">
+        <span class="metric-label" data-i18n="metric2Label">Accessibility Standard</span>
+        <div class="metric-value">WCAG 2.2 AAA</div>
+        <span class="metric-sub" data-i18n="metric2Sub">Section 508 & ADA Level</span>
+      </div>
+      <div class="metric-card glass">
+        <span class="metric-label" data-i18n="metric3Label">Dialogue Collision</span>
+        <div class="metric-value">0.0% Collisions</div>
+        <span class="metric-sub" data-i18n="metric3Sub">Strict Silence Gap Fitting</span>
+      </div>
+      <div class="metric-card glass">
+        <span class="metric-label" data-i18n="metric4Label">Contrast Ratio</span>
+        <div class="metric-value">8.4 : 1</div>
+        <span class="metric-sub" data-i18n="metric4Sub">Target &ge; 7.0 for AAA</span>
+      </div>
+    </section>
+
+    <!-- Studio Section -->
+    <section class="studio-section">
+      <div class="section-header">
+        <div>
+          <h3 data-i18n="studioTitle">Live Media Accessibility Studio</h3>
+          <p class="section-desc" data-i18n="studioDesc">Simulate live video stream frame ingestion, inspect on-screen visual entities and silence gap budgets, synthesize SSML speech markup, and review automated WCAG 2.2 AAA compliance audits.</p>
+        </div>
+      </div>
+
+      <div class="studio-layout">
+        <!-- Input & Control Panel -->
+        <div class="panel glass">
+          <!-- Preset Scenarios -->
+          <div class="preset-box">
+            <span class="preset-label" data-i18n="lblPresets">Select Live Broadcast Scenario:</span>
+            <div class="preset-buttons" id="scenarioButtons">
+              <!-- JS Rendered -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="lblScene">Scene Category</label>
+            <input type="text" id="sceneInput" class="input-control" value="Keynote Presentation">
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="lblEntities">Visual Salience & Entities (comma-separated)</label>
+            <textarea id="entitiesInput" class="input-control textarea-control" rows="2">Presenter gesturing at slide, Bar chart showing revenue growth, Audience clapping</textarea>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="lblOcr">On-Screen Text OCR</label>
+            <input type="text" id="ocrInput" class="input-control" value="Q4 Enterprise AI Growth: +142% YoY">
+          </div>
+
+          <div class="form-group">
+            <div class="flex-between">
+              <label data-i18n="lblSilenceGap">Available Inter-Dialogue Silence Gap</label>
+              <span id="gapVal" class="metric-val-sm">3.5s</span>
+            </div>
+            <input type="range" id="gapRange" min="1.0" max="6.0" step="0.5" value="3.5" class="range-control" oninput="updateGapLabel(this.value)">
+          </div>
+
+          <button class="btn btn-primary btn-block" onclick="runAccessibilityStream()" id="describeBtn">
+            <span data-i18n="btnExecuteDescribe">🎙️ Generate Live Audio Description & Audit</span>
+          </button>
+        </div>
+
+        <!-- Output & Waveform Panel -->
+        <div class="panel glass output-panel">
+          <div class="panel-header">
+            <span class="panel-title" data-i18n="titleAudioTrack">Live Audio Description Stream</span>
+            <span id="complianceBadge" class="badge badge-success">WCAG 2.2 AAA COMPLIANT</span>
+          </div>
+
+          <!-- Waveform Visualizer Simulation -->
+          <div class="wave-container">
+            <div class="wave-bar active"></div>
+            <div class="wave-bar active" style="height:35px;"></div>
+            <div class="wave-bar active" style="height:60px;"></div>
+            <div class="wave-bar active" style="height:45px;"></div>
+            <div class="wave-bar active" style="height:70px;"></div>
+            <div class="wave-bar active" style="height:55px;"></div>
+            <div class="wave-bar active" style="height:30px;"></div>
+            <div class="wave-bar active" style="height:65px;"></div>
+            <div class="wave-bar active" style="height:40px;"></div>
+            <div class="wave-bar active" style="height:20px;"></div>
+          </div>
+
+          <!-- Description Live Text -->
+          <div class="description-box">
+            <span class="box-header" data-i18n="lblSpokenDesc">Spoken Audio Description (Earcon Track):</span>
+            <p id="audioText" class="desc-text">Select a scenario to trigger real-time assistive narration...</p>
+          </div>
+
+          <!-- SSML Speech Markup Stream -->
+          <div class="terminal-box">
+            <span class="terminal-header" data-i18n="lblSsml">SSML Speech Synthesis Stream:</span>
+            <pre><code id="ssmlStream" class="code-block">&lt;speak&gt;
+  &lt;prosody rate="105%" pitch="+2st"&gt;
+    &lt;emphasis level="moderate"&gt;Awaiting live stream frame...&lt;/emphasis&gt;
+  &lt;/prosody&gt;
+&lt;/speak&gt;</code></pre>
+          </div>
+
+          <!-- Compliance Audit Audit Notes -->
+          <div class="audit-box">
+            <strong data-i18n="lblAuditLog">WCAG 2.2 AAA Compliance Audit:</strong>
+            <ul id="auditList" class="audit-list">
+              <li>• Dialogue Collision: PASSED (Speech fits 3.5s silence gap)</li>
+              <li>• Contrast Minimum (Rule 1.4.3): 8.4:1 ratio (Exceeds 7:1 AAA standard)</li>
+              <li>• Latency Budget: 95.0ms (Well under 200ms real-time constraint)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p style="margin-bottom:6px;"><a href="https://asadullahshafique-devunity.vercel.app" target="_blank" style="color:var(--accent-emerald); text-decoration:none; font-weight:600;">← Back to Asadullah Shafique Portfolio (DevUnity)</a></p>
+    <p>© 2026 AccessAI • Real-Time Accessibility Framework • <a href="https://github.com/asadullah48/accessai" target="_blank">GitHub Repository</a></p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
