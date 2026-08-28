@@ -115,6 +115,25 @@ docker compose up --build
 The image runs as an unprivileged user (uid 10001). The compose file and the Helm chart
 add a read-only root filesystem, `no-new-privileges`, and drop all Linux capabilities.
 
+### Published image
+
+Multi-arch (`linux/amd64`, `linux/arm64`) images are published to GHCR on every `v*` tag,
+with provenance and an SBOM:
+
+```bash
+docker run --rm -p 8015:8015 ghcr.io/asadullah48/accessai:1.1.0
+```
+
+The Helm chart installs that image directly:
+
+```bash
+helm upgrade --install accessai ./helm --set image.tag=1.1.0
+```
+
+Releasing a new version is `git tag vX.Y.Z && git push origin vX.Y.Z`. The workflow runs
+the test suite against the tagged tree before it builds, then pulls the published image by
+digest and smoke tests it.
+
 ---
 
 ## 🔌 API
