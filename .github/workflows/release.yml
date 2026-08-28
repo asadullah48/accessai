@@ -1,0 +1,114 @@
+name: Release
+
+# Publishes the container image to GHCR. A tag can point at any commit,
+# including one CI never checked, so the image is only built after the suite
+# passes on the tagged tree.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  verify:
+    name: Verify tagged tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check accessai tests
+      - run: pytest -q
+
+  publish:
+    name: Build and publish image
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Emulation lets a single amd64 runner produce the arm64 variant too.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=AccessAI
+            org.opencontainers.image.description=Real-Time Audio Description & WCAG 2.2 AAA Multi-Agent Framework
+            org.opencontainers.image.licenses=Apache-2.0
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  smoke:
+    name: Smoke test the published image
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and exercise the published image
+        run: |
+          IMAGE_REF="${{ env.IMAGE }}@${{ needs.publish.outputs.digest }}"
+          docker run -d --name accessai-release -p 8015:8015 "$IMAGE_REF"
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:8015/healthz >/dev/null; then break; fi
+            sleep 2
+          done
+
+          echo "--- healthz ---"
+          curl -fsS http://localhost:8015/healthz | tee /tmp/health.json
+          grep -q healthy /tmp/health.json
+
+          echo "--- the audit actually evaluates ---"
+          curl -fsS -X POST http://localhost:8015/api/v1/accessibility/describe-stream             -H 'Content-Type: application/json'             -d '{"caption_foreground_hex":"#777777","caption_background_hex":"#6E6E6E"}'             | tee /tmp/audit.json
+          grep -q '"contrast_passed":false' /tmp/audit.json
+
+          echo "--- runs as a non-root user ---"
+          test "$(docker exec accessai-release id -u)" = "10001"
+
+          docker rm -f accessai-release
