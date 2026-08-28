@@ -25,3 +25,5 @@ wheels/
 .env
 .coverage
 htmlcov/
+.ruff_cache/
+coverage.xml

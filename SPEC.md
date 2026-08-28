@@ -5,9 +5,9 @@
 Live media streams, keynote presentations, and video conferences remain largely inaccessible to visually impaired users due to a lack of synchronized, real-time audio descriptions. Traditional audio description workflows require manual post-production, making live broadcast accessibility prohibitive. Furthermore, naive automated approaches often collide with human dialogue or violate accessibility regulations (WCAG 2.2 AAA, Section 508, ADA Title III).
 
 **AccessAI** delivers a **real-time accessibility multi-agent framework**:
-1. **StreamAgent**: Ingests video frames, extracts visual salience, performs on-screen text OCR, and detects inter-dialogue silence gaps.
+1. **StreamAgent**: Ingests analysed frames carrying visual salience, on-screen text and the inter-dialogue silence gap, and normalises them for the pipeline.
 2. **NarratorAgent**: Generates vivid, concise audio descriptions formatted as SSML speech streams fitted into dialogue pauses.
-3. **ComplianceAgent**: Enforces WCAG 2.2 AAA (Rules 1.2.5, 1.2.7), Section 508, and ADA Title III, guaranteeing zero human dialogue collision and sub-200ms latency.
+3. **ComplianceAgent**: Evaluates WCAG 2.2 (1.2.5, 1.2.7, 1.4.6), Section 508 and ADA Title III, reporting whether the description collides with dialogue and whether the pipeline met its latency budget.
 
 ---
 
@@ -36,15 +36,51 @@ graph TD
 
 ---
 
-## 3. WCAG 2.2 AAA Compliance Guardrail Scorecard
+## 3. Compliance Guardrail Scorecard
 
-| WCAG / Regulatory Rule | Target Standard | Enforced Mechanism | Action on Violation |
-| :--- | :--- | :--- | :--- |
-| **WCAG 1.2.5 (Level AA)** | Audio Description (Prerecorded) | Automated scene narration synthesis | Enforce synthesized track |
-| **WCAG 1.2.7 (Level AAA)** | Extended Audio Description | Dynamic video pause / extended pause | Trigger extended window |
-| **WCAG 1.4.3 / 1.4.6 (AAA)** | Contrast Ratio $\ge 7:1$ | High-contrast visual OCR validation | Flag visual drift |
-| **Dialogue Collision** | Zero Overlap with Dialogue | Silence gap window constraint | Prune description length |
-| **E2E Latency Budget** | $t_{\text{latency}} \le 200\text{ms}$ | Microsecond AST & SSML compilation | Shed low-priority tokens |
+Every criterion below is computed from the frame and the generated description. None is
+asserted, and each has inputs that make it fail.
+
+| Criterion | Target | Enforced Mechanism | Weight | On Violation |
+| :--- | :--- | :--- | ---: | :--- |
+| **WCAG 1.2.5 (AA)** | Audio Description present | Non-empty description track synthesized | 25 | Score reduced; audit fails |
+| **WCAG 1.2.7 (AAA)** | Extended Audio Description | Engaged only when the gap is too short; requires `extended_pause_available` | 15 | Score reduced; audit fails |
+| **WCAG 1.4.6 (AAA)** | Contrast ratio >= 7:1 normal text, >= 4.5:1 large text | Relative-luminance maths on the caption colours | 20 | Score reduced; audit fails |
+| **Dialogue Collision** | Zero overlap with dialogue | Estimated speech duration vs. silence gap | 30 | Description pruned, then flagged |
+| **E2E Latency Budget** | t <= 200ms | `perf_counter` around the pipeline, reported unmodified | 10 | Score reduced; audit fails |
+
+Note on numbering: success criterion **1.4.3 Contrast (Minimum)** is Level **AA** and asks
+for 4.5:1; **1.4.6 Contrast (Enhanced)** is Level **AAA** and asks for 7:1. The AAA target
+this project claims is therefore 1.4.6. The response field is named
+`wcag_rule_1_4_3_contrast_ratio` for backwards compatibility with the 1.0.0 API, but it
+carries the measured ratio and is evaluated against the level in `conformance_level`.
+
+### 3.1 Scoring
+
+`compliance_score` is the summed weight of the criteria that passed, over the total
+weight, as a percentage. `is_compliant` is true only when every criterion passes. The
+weights are a policy choice, defined in `ComplianceGuardrails.CHECK_WEIGHTS`: a dialogue
+collision carries the heaviest penalty because it does not merely fail to help, it masks
+speech the listener could otherwise hear. Latency carries the lightest because a late but
+correct description still conveys the scene.
+
+---
+
+### 3.2 Description degradation ladder
+
+`NarratorAgent` returns the most detailed rung that fits the available gap:
+
+| Level | Content |
+| ---: | :--- |
+| 0 | All salient entities, plus the on-screen text |
+| 1 | Primary subject, plus the on-screen text |
+| 2 | Primary subject alone |
+| 3 | Primary subject hard-trimmed to the word budget the gap can carry |
+
+Supporting entities are dropped before the on-screen text, and the on-screen text before
+the primary subject. The primary subject is never dropped. When the gap is shorter than
+the minimum utterance length no rung can fit, and the event reports
+`fits_silence_gap: false` rather than claiming success.
 
 ---
 
@@ -52,6 +88,6 @@ graph TD
 
 | Agent Name | Core Specialty | Key Performance Metric |
 | :--- | :--- | :--- |
-| **`StreamAgent`** | Visual entity extraction, OCR scanning, silence gap detection. | Feature extraction ($<35\text{ms}$). |
-| **`NarratorAgent`** | Natural language audio description, SSML markup formatting. | Speech rate fit ($100\%$ within silence gap). |
-| **`ComplianceAgent`** | WCAG 2.2 AAA, Section 508, and ADA Title III certification. | Zero dialogue collision guarantee. |
+| **`StreamAgent`** | Frame normalisation: entity trimming, salience ordering, gap budget. | Deterministic and non-mutating. |
+| **`NarratorAgent`** | Audio description, degradation ladder, escaped SSML markup. | Fits the gap whenever the gap exceeds the minimum utterance length. |
+| **`ComplianceAgent`** | WCAG 2.2, Section 508 and ADA Title III evaluation. | Five measured criteria; weighted score. |

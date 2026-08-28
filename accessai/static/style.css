@@ -13,12 +13,12 @@
   --accent-cyan: #06b6d4;
   --accent-teal: #14b8a6;
   --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
-  --accent-violet: #8b5cf6;
+  --accent-rose: #f87c91;
+  --accent-violet: #b191f9;
 
   --text-main: #f0fdf4;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-muted: #c3cedb;
+  --text-dim: #99a4b3;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-arabic: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
@@ -366,7 +366,6 @@ body {
   padding: 10px 14px;
   font-size: 0.88rem;
   font-family: var(--font-sans);
-  outline: none;
 }
 .textarea-control {
   resize: vertical;
@@ -490,4 +489,95 @@ body {
 }
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+
+/* ==========================================================================
+   Accessibility layer
+   ========================================================================== */
+
+/* Visually hidden, still announced by assistive technology. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard bypass for the header, revealed only on focus (WCAG 2.4.1). */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -120%);
+  z-index: 999;
+  padding: 12px 22px;
+  background: var(--accent-emerald);
+  color: #04150e;
+  font-weight: 700;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  text-decoration: none;
+  transition: transform 0.18s ease;
+}
+.skip-link:focus {
+  transform: translate(-50%, 0);
+}
+
+/* A single visible focus indicator for every interactive element (WCAG 2.4.7).
+   :focus-visible keeps it off pointer clicks but always on for keyboard users. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--accent-cyan);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Currently selected broadcast scenario. */
+.preset-btn[aria-pressed="true"] {
+  border-color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--text-main);
+}
+
+/* Error surface for failed requests. */
+.error-text {
+  color: var(--accent-rose);
+  font-weight: 600;
+}
+
+/* Respect a user's stated motion preference (WCAG 2.3.3).
+   The ambient glow and waveform are decorative, so they simply stop. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .glow-sphere {
+    display: none;
+  }
+}
+
+/* Honour a forced-colours / high-contrast operating system theme. */
+@media (forced-colors: active) {
+  .glass,
+  .metric-card,
+  .panel {
+    border: 1px solid CanvasText;
+  }
+  .skip-link {
+    border: 1px solid CanvasText;
+  }
 }

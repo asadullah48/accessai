@@ -1,5 +1,7 @@
-from accessai.agents.stream_agent import StreamAgent
-from accessai.agents.narrator_agent import NarratorAgent
-from accessai.agents.compliance_agent import ComplianceAgent
+"""Specialised agents composing the AccessAI accessibility loop."""
 
-__all__ = ["StreamAgent", "NarratorAgent", "ComplianceAgent"]
+from accessai.agents.compliance_agent import ComplianceAgent
+from accessai.agents.narrator_agent import NarratorAgent
+from accessai.agents.stream_agent import StreamAgent
+
+__all__ = ["ComplianceAgent", "NarratorAgent", "StreamAgent"]

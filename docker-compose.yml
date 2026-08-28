@@ -1,16 +1,29 @@
-version: '3.8'
-
+# The top-level "version" key is obsolete in Compose V2 and is intentionally omitted.
 services:
   accessai-gateway:
     build: .
+    image: accessai:1.1.0
     container_name: accessai-gateway
     ports:
       - "8015:8015"
     environment:
       - ENVIRONMENT=production
+      - ACCESSAI_LOG_LEVEL=INFO
+      # Browser origins permitted to call the API. Credentials are sent only to
+      # explicitly listed origins, never alongside a wildcard.
+      - ACCESSAI_CORS_ORIGINS=http://127.0.0.1:8015,http://localhost:8015
+      - ACCESSAI_CORS_ALLOW_CREDENTIALS=false
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8015/healthz"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8015/healthz"]
       interval: 15s
       timeout: 5s
       retries: 3
-    restart: always
+      start_period: 10s
+    restart: unless-stopped

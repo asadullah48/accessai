@@ -4,6 +4,8 @@ metadata:
   name: {{ .Release.Name }}-accessai
   labels:
     app.kubernetes.io/name: accessai
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -14,15 +16,54 @@ spec:
       labels:
         app.kubernetes.io/name: accessai
     spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-accessai" .Release.Name) }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: accessai
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - name: http
+              containerPort: 8015
+              protocol: TCP
+          env:
+            - name: ACCESSAI_ENVIRONMENT
+              value: {{ .Values.config.environment | quote }}
+            - name: ACCESSAI_LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+            - name: ACCESSAI_CORS_ORIGINS
+              value: {{ .Values.config.corsOrigins | quote }}
+            - name: ACCESSAI_CORS_ALLOW_CREDENTIALS
+              value: {{ .Values.config.corsAllowCredentials | quote }}
+            - name: ACCESSAI_LOG_HEALTH_PROBES
+              value: {{ .Values.config.logHealthProbes | quote }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          # readOnlyRootFilesystem requires a writable scratch mount.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
