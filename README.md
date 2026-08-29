@@ -233,6 +233,22 @@ ruff format accessai tests
 `tests/test_regressions.py` pins defects found in the 1.0.0 audit; each test there fails
 against the pre-1.1.0 implementation.
 
+### Continuous integration
+
+Every push and pull request runs ruff, the suite against Python 3.10 through 3.13, and a
+Docker build whose container is smoke tested over HTTP.
+
+Workflow actions are pinned to commit SHAs rather than moving tags, with the release each
+one corresponds to kept in a trailing comment:
+
+```yaml
+- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+```
+
+A major tag is mutable, and these workflows run with a token that can write packages, so
+the pin fixes exactly which code runs. Dependabot proposes updates weekly as one grouped
+pull request, which is what keeps a pinned action from quietly going stale.
+
 ---
 
 ## 🌐 Connected Ecosystem & Portfolio
