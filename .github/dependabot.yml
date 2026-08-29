@@ -1,0 +1,18 @@
+version: 2
+
+# The actions are pinned to commit SHAs, so a major bump is otherwise invisible
+# until the runner starts annotating deprecations. Dependabot rewrites both the
+# SHA and its trailing version comment, which keeps the pins readable.
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    # One PR for the whole set rather than eight; these move together and CI
+    # verifies them as a unit anyway.
+    groups:
+      actions:
+        patterns: ["*"]
