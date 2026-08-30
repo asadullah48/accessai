@@ -3,6 +3,7 @@
 > **An assistive multi-agent framework that generates live audio descriptions fitted into dialogue gaps, and audits them against WCAG 2.2 AAA, Section 508 and ADA Title III.**
 
 [![CI](https://github.com/asadullah48/accessai/actions/workflows/ci.yml/badge.svg)](https://github.com/asadullah48/accessai/actions/workflows/ci.yml)
+[![Status: Complete](https://img.shields.io/badge/Status-Complete-success.svg)]()
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
 [![WCAG 2.2 AAA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AAA-brightgreen.svg)]()
