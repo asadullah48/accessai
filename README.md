@@ -276,3 +276,11 @@ pull request, which is what keeps a pinned action from quietly going stale.
 ## 📄 License
 
 Apache License 2.0 — see [LICENSE](./LICENSE).
+---
+
+## Author
+
+Built by **Asadullah Shafique**.
+
+🔗 Explore my portfolio showcasing Agentic AI projects and real-world applications:
+**[asadullahshafique-devunity.vercel.app](https://asadullahshafique-devunity.vercel.app)**
